@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForceBand: Learning Forceful Manipulation with sEMG</title>
+  <meta name="description" content="ForceBand is a low-cost wrist-worn sEMG band that turns muscle activity into per-finger force labels for human demonstrations — force-aware robot policies with 87% success on pick, squeeze, and place.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ForceBand: Learning Forceful Manipulation with sEMG">
+  <meta property="og:description" content="A $300 wrist-worn sEMG band + EMG2Force model that label human demonstrations with per-finger force traces — force-aware robot policies without instrumenting the fingertips.">
+  <meta property="og:image" content="static/images/posters/teaser.jpg">
+  <meta property="og:url" content="https://forceband-emg.github.io/">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" href="static/images/forceband_band.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css?v=21">
+</head>
+<body>
+
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <!-- ============================ NAV ============================ -->
+  <header class="nav" id="siteNav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="ForceBand home">
+        <img src="static/images/forceband_band.png" alt="ForceBand wristband logo">
+        <span><em>Force</em>Band</span>
+      </a>
+      <nav class="nav-links" id="navLinks" aria-label="Sections">
+        <a href="#overview">Overview</a>
+        <a href="#video">Video</a>
+        <a href="#emg2force">EMG2Force</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#policy">Policy</a>
+        <a href="#results">Results</a>
+        <a href="#team">Team</a>
+        <a href="#bibtex">BibTeX</a>
+      </nav>
+      <!-- TODO: link the paper PDF / arXiv page once public -->
+      <a class="btn btn-primary btn-sm nav-cta" href="#" title="Link coming soon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+        Paper
+      </a>
+      <button class="nav-burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ============================ HERO ============================ -->
+    <section class="hero" aria-label="Introduction">
+      <div class="container">
+        <!-- TODO: replace with the venue once the paper is public -->
+        <!-- <p class="hero-venue reveal">Under review &middot; 2026</p> -->
+
+        <h1 class="hero-title reveal">
+          <img class="hero-glasses" src="static/images/forceband_band.png" alt="">
+          <span><em>Force</em>Band</span>
+        </h1>
+        <p class="hero-sub reveal">Learning Forceful Manipulation with sEMG</p>
+
+        <!-- TODO: add homepage links for authors beyond the first two when available -->
+        <p class="authors reveal">
+          <a href="https://bottle101.github.io/" target="_blank" rel="noopener">Botao&nbsp;He</a><sup>1,2</sup><span>,</span>
+          <a href="https://tx-leo.github.io" target="_blank" rel="noopener">Zhi&nbsp;Wang</a><sup>1,2</sup><span>,</span>
+          Linna&nbsp;Kuang<sup>3</sup><span>,</span>
+          Ishaan&nbsp;Ghosh<sup>2</sup><span>,</span>
+          Jitendra&nbsp;Malik<sup>1</sup><span>,</span>
+          Cornelia&nbsp;Fermuller<sup>2</sup><span>,</span>
+          Tingfan&nbsp;Wu<sup>1</sup><span>,</span>
+          Jiayuan&nbsp;Mao<sup>1</sup><span>,</span>
+          Ruoshi&nbsp;Liu<sup>1,&dagger;</sup><span>,</span>
+          Haozhi&nbsp;Qi<sup>1,&dagger;</sup><span>,</span>
+          Yiannis&nbsp;Aloimonos<sup>2,&dagger;</sup>
+        </p>
+        <p class="affil reveal"><sup>1</sup>Amazon FAR &nbsp;·&nbsp; <sup>2</sup>University of Maryland &nbsp;·&nbsp; <sup>3</sup>Johns Hopkins University &nbsp;·&nbsp; <sup>&dagger;</sup>Equal advising</p>
+
+        <div class="hero-actions reveal">
+          <!-- TODO: fill in real links (paper, code + BOM, dataset) once released -->
+          <a class="btn btn-primary" href="#" title="Link coming soon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+            Paper
+          </a>
+          <a class="btn" href="#" title="Link coming soon">
+            <svg viewBox="0 0 24 24"><path d="M12 0a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.3 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 0z"/></svg>
+            Code &amp; BOM
+          </a>
+          <a class="btn" href="#" title="Link coming soon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C7 2 3 4 3 6.5v11C3 20 7 22 12 22s9-2 9-4.5v-11C21 4 17 2 12 2zm0 2c4.4 0 7 1.6 7 2.5S16.4 9 12 9 5 7.4 5 6.5 7.6 4 12 4zm7 13.5c0 .9-2.6 2.5-7 2.5s-7-1.6-7-2.5v-2.6C6.6 18 9.2 18.5 12 18.5s5.4-.6 7-1.6v2.6zm0-5.5c0 .9-2.6 2.5-7 2.5S5 12.9 5 12V9.4C6.6 10.4 9.2 11 12 11s5.4-.6 7-1.6V12z"/></svg>
+            Dataset
+          </a>
+          <a class="btn" href="#video">
+            <svg viewBox="0 0 24 24"><path d="M21 6.3a2.6 2.6 0 0 0-1.8-1.8C17.6 4 12 4 12 4s-5.6 0-7.2.5A2.6 2.6 0 0 0 3 6.3 27 27 0 0 0 2.5 12 27 27 0 0 0 3 17.7a2.6 2.6 0 0 0 1.8 1.8c1.6.5 7.2.5 7.2.5s5.6 0 7.2-.5a2.6 2.6 0 0 0 1.8-1.8 27 27 0 0 0 .5-5.7 27 27 0 0 0-.5-5.7zM10 15.5v-7l5.8 3.5-5.8 3.5z"/></svg>
+            Video
+          </a>
+        </div>
+
+        <div class="hero-stats reveal" aria-label="Key numbers">
+          <div class="stat">
+            <strong>$<span class="count" data-count="300">0</span></strong>
+            <span>hardware cost, open-source BOM</span>
+          </div>
+          <div class="stat">
+            <strong><span class="count" data-count="10">0</span> h</strong>
+            <span>video + sEMG + IMU + fingertip force</span>
+          </div>
+          <div class="stat">
+            <strong>&gt;<span class="count" data-count="50">0</span>%</strong>
+            <span>lower force error than vision baselines</span>
+          </div>
+          <div class="stat">
+            <strong><span class="count" data-count="87">0</span>%</strong>
+            <span>pick · squeeze · place success</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-video reveal">
+        <p class="hero-tagline">Bring <em>force</em> into human data, for <em>forceful</em> manipulation.</p>
+
+        <!-- Paired human/robot force demos. TODO: replace each "xx" with the measured Newton value. -->
+        <div class="pairs">
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge human">Human</span>
+              <video class="scroll-play" data-src="static/videos/toothpaste_human.mp4" poster="static/images/posters/toothpaste_human.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Squeeze toothpaste: <span class="force-val">10.2&nbsp;N</span></figcaption>
+          </figure>
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge">Robot</span>
+              <video class="scroll-play" data-src="static/videos/toothpaste_robot.mp4" poster="static/images/posters/toothpaste_robot.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Squeeze toothpaste: <span class="force-val">12.6&nbsp;N</span></figcaption>
+          </figure>
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge human">Human</span>
+              <video class="scroll-play" data-src="static/videos/chips_human.mp4" poster="static/images/posters/chips_human.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Pick&Place chips: <span class="force-val">5.2&nbsp;N</span></figcaption>
+          </figure>
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge">Robot</span>
+              <video class="scroll-play" data-src="static/videos/chips_robot.mp4" poster="static/images/posters/chips_robot.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Pick&Place chips: <span class="force-val">1.7&nbsp;N</span></figcaption>
+          </figure>
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge human">Human</span>
+              <video class="scroll-play" data-src="static/videos/bbqs_human.mp4" poster="static/images/posters/bbqs_human.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Squeeze BBQ sauce: <span class="force-val">17.3&nbsp;N</span></figcaption>
+          </figure>
+          <figure class="pair-cell">
+            <div class="video-frame">
+              <span class="who-badge">Robot</span>
+              <video class="scroll-play" data-src="static/videos/bbqs_robot.mp4" poster="static/images/posters/bbqs_robot.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <figcaption>Squeeze BBQ sauce: <span class="force-val">18.4&nbsp;N</span></figcaption>
+          </figure>
+        </div>
+
+        <hr class="hero-divider">
+
+        <video class="scroll-play" data-threshold="0.95" src="static/images/teaser.mp4" poster="static/images/posters/teaser.jpg" muted loop playsinline preload="metadata" aria-label="ForceBand teaser"></video>
+      </div>
+
+    </section>
+
+    <!-- ============================ OVERVIEW ============================ -->
+    <section id="overview" class="section alt">
+      <div class="container">
+        <p class="eyebrow reveal">Overview</p>
+        <!-- Overview / method teaser (real footage): paper teaser diagram — sEMG human dataset →
+             EMG2Force → human-to-robot transfer, building up to the full pipeline + the four key
+             properties. ~7 s, 1920×1080 (16:9), no audio, plays once on scroll-in then holds the
+             final diagram. Source static/images/overview.m4v (1080p, 5.1 MB) →
+             static/videos/overview.mp4 (1080p, 490 KB). -->
+        <figure class="figure reveal">
+          <div class="video-frame">
+            <video class="scroll-play" data-src="static/videos/overview.mp4" data-rest="end" poster="static/images/posters/overview.jpg" muted playsinline preload="none" aria-label="ForceBand overview: an sEMG human-demonstration dataset trains an sEMG-to-force model that labels videos with per-finger force, transferring forceful manipulation from humans to robots — robot-data-free, force beyond vision, free-hand force sensing, low cost and reproducible"></video>
+          </div>
+        </figure>
+        <!-- <h2 class="reveal">Force sensing on the wirst; bring force into human data, zero-shot forceful manipulation</h2> -->
+        <!-- Full paper abstract. -->
+        <p class="lead reveal">
+          Human demonstrations are a scalable data source for learning robot manipulation policies.
+          However, common human demonstrations — such as motion-capture trajectories and internet
+          videos — do not capture the <strong>contact forces</strong> that are critical for forceful
+          manipulation. In this paper, we introduce <strong><em>Force</em>Band</strong>, a
+          low-cost wrist-worn <strong>sEMG (surface electromyography)</strong> system for turning human muscle activity into
+          force-enriched demonstrations. We first collect a <strong>10-hour multimodal
+          dataset</strong> containing egocentric video, sEMG, IMU, and fingertip forces across diverse
+          actions and objects. Using this dataset, we pre-train an <strong>EMG2Force</strong> model
+          that predicts per-finger forces from sEMG and IMU signals. After a short calibration, users
+          can collect target-task demonstrations using only ForceBand and
+          video; EMG2Force then labels these demonstrations with per-finger force traces, producing
+          force-augmented demonstrations for robot policy learning. Experiments show that
+          ForceBand recovers fine-grained fingertip interactions with
+          <strong>over 50% lower force prediction error</strong> than vision-based baselines, and
+          achieves an <strong>87% success rate</strong> on pick, squeeze, and place tasks that require
+          object-specific force control across objects with diverse shapes, sizes, and weights.
+        </p>
+
+        <div class="pillars">
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.3A7 7 0 0 1 12 2zm-3 18h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1z"/></svg>
+            </div>
+            <h3>Robot-Data-Free</h3>
+            <p>No teleoperation, no robot in the data loop — just natural human demos.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5c-1.7-4.4-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </div>
+            <h3>Force Beyond Vision</h3>
+            <p>Muscles reveal forces cameras can't see — even on occluded fingers.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M7 11.5V6a2 2 0 0 1 4 0v4h1V3.5a2 2 0 0 1 4 0V10h1V5a2 2 0 0 1 4 0v9c0 4.4-3.6 8-8 8h-1.5c-2.2 0-4.3-.9-5.8-2.4L2.3 16c-.8-.8-.8-2 0-2.8.8-.8 2-.8 2.8 0l1.9 1.9V11.5z"/></svg>
+            </div>
+            <h3>Free-Hand Force Sensing</h3>
+            <p>Nothing on the fingertips during demos — the hand stays natural and visible.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4zm-1 13.6-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6z"/></svg>
+            </div>
+            <h3>Low Cost &amp; Reproducible</h3>
+            <p>As low as $300 — commodity parts, 3D-printed shell, open BOM.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ VIDEO ============================ -->
+    <section id="video" class="band" aria-label="Supplementary video">
+      <div class="container-wide">
+        <p class="eyebrow reveal">Video</p>
+        <h2 class="reveal">90 seconds, end to end</h2>
+        <div class="video-frame reveal">
+          <video src="static/videos/forceband_video.mp4" data-start="20" poster="static/images/posters/forceband_video.jpg" muted loop playsinline preload="none" controls></video>
+        </div>
+        <!-- <p class="caption reveal">
+          1:49, no audio — plays from 0:20 (the intro mirrors the teaser) · system 0:24 · dataset 0:40 · hardware 1:00 · deployment 1:12 · rollouts &amp; robustness 1:28.
+        </p> -->
+      </div>
+    </section>
+
+    <!-- ============================ HARDWARE ============================ -->
+    <section id="hardware" class="section alt">
+      <div class="container">
+        <p class="eyebrow reveal">Hardware</p>
+        <h2 class="reveal">Read finger forces at their source — the forearm muscles</h2>
+        <p class="lead reveal">
+          Build our anatomically guided band for as low as $300, or use
+          <strong>any 8-channel sEMG band with an IMU</strong>.
+        </p>
+
+        <!-- Wide hero video; spec cards below (was a left/right .split). -->
+        <figure class="figure hw-figure reveal">
+          <div class="video-frame">
+            <video class="scroll-play" data-src="static/videos/hardware_8ch.mp4" poster="static/images/posters/hardware_8ch.jpg" muted loop playsinline preload="none" aria-label="Anatomically guided 8-channel electrode layout, mapped over the forearm muscles, building into the ForceBand"></video>
+          </div>
+        </figure>
+
+        <h3 class="hw-heading reveal">Muscle-aware by design</h3>
+        <div class="pillars">
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 13h4v8H3v-8zm7-6h4v14h-4V7zm7-4h4v18h-4V3z"/></svg>
+            </div>
+            <h3>Low-noise</h3>
+            <p>ADS-1299 front end — 0.14 µV<sub>rms</sub>, SNR 119.5.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18V4a8 8 0 0 1 0 16z"/></svg>
+            </div>
+            <h3>Bipolar pairs</h3>
+            <p>Suppress common-mode noise and motion artifacts.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+            </div>
+            <h3>Anatomically guided</h3>
+            <p>8 channels: 7 finger muscles + 1 wrist flexion.</p>
+          </div>
+          <div class="pillar reveal">
+            <div class="pillar-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4zm-1 13.6-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4-6 6z"/></svg>
+            </div>
+            <h3>Reproducible</h3>
+            <p>3D-printed, off-the-shelf parts, open BOM.</p>
+          </div>
+        </div>
+
+        <!-- Extendability: custom open hardware scales where closed/off-the-shelf bands can't.
+             16-channel build is new (not in the paper) — keep claims soft, no brand names (site is pre-review). -->
+        <div class="split flip media-sm">
+          <figure class="figure reveal">
+            <img class="zoomable" src="static/images/forceband_16ch.webp"
+                 alt="ForceBand 16-channel sEMG band — an extended build that doubles the channel count of the 8-channel design"
+                 loading="lazy">
+            <!-- <figcaption><strong>16 channels, same recipe</strong> — the open design scales past what closed bands allow.</figcaption> -->
+          </figure>
+          <div class="split-text reveal">
+            <h3>Open by design — built to extend</h3>
+            <p>Off-the-shelf bands are locked: fixed channels, sealed, closed firmware.</p>
+            <p>Ours scales. The ADS1299 daisy-chains over one SPI bus — we added a
+              second chip for a <strong>16-channel</strong> band, same open BOM.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ EMG2FORCE ============================ -->
+    <section id="emg2force" class="section">
+      <div class="container">
+        <p class="eyebrow reveal">Dataset &amp; Model</p>
+        <h2 class="reveal">EMG2Force: muscles in, fingertip forces out</h2>
+        <p class="lead reveal">
+          sEMG is noisy and personal. EMG2Force is pretrained once on 10 hours of paired data,
+          then calibrated to each user in minutes.
+        </p>
+
+        <!-- Architecture: build-up diagram (left, larger) + plain-language explainer (right).
+             Video mirrors paper Fig. 2: EMG + IMU → STFT spectrogram (frequency) and token streams
+             (time) → prediction model → five fingertip forces. -->
+        <div class="split media-lg">
+          <figure class="figure reveal">
+            <div class="video-frame">
+              <video class="scroll-play" data-src="static/videos/emg2force.mp4"
+                     poster="static/images/posters/emg2force.jpg"
+                     muted loop playsinline preload="none"
+                     aria-label="EMG2Force architecture: sEMG and IMU stream into an STFT spectrogram and time-domain tokens, fused by a prediction model into five fingertip forces"></video>
+            </div>
+          </figure>
+          <div class="split-text reveal">
+            <h3>A spectrogram-augmented transformer</h3>
+            <p>5-second windows of 8-channel sEMG + a 10-D IMU stream at 250&nbsp;Hz.</p>
+            <ul class="checklist">
+              <li><strong>Two views</strong> — STFT spectrogram (frequency) + raw streams (time).</li>
+              <!-- <li><strong>Two encoders</strong> — pretrained DINOv3 on the spectrogram, 1-D conv on the streams.</li> -->
+              <li><strong>Transformer fusion</strong> — outputs one force trace per finger.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- In-the-wild gallery: the EMG2Force labeler running live across everyday scenes. Each clip's
+             HUD overlays raw sEMG, the ForceBand hand pose, and a per-finger force trace (Thumb→Pinky).
+             Sources static/images/pretrain1-4.m4v (1080p, ~13 MB) compressed to 720p mp4 in static/videos/. -->
+        <h3 class="block-heading reveal">EMG2Force in the wild</h3>
+        <p class="lead reveal">
+          The model, running live across everyday scenes — every clip pairs egocentric video with
+          synchronized sEMG, IMU, and per-finger force.
+        </p>
+        <!-- Single-clip carousel: side arrows + a clickable segment bar switch between pretrain1-4.
+             Only the active <video> plays; this carousel (main.js) owns lazy-loading and playback,
+             so these videos intentionally omit the generic .scroll-play class. -->
+        <div class="gallery reveal" id="pretrainGallery">
+          <div class="gallery-stage">
+            <span class="gallery-label" aria-hidden="true">Kitchen sink</span>
+            <figure class="gallery-slide is-active" data-label="Kitchen sink">
+              <video data-src="static/videos/pretrain1.mp4" poster="static/images/posters/pretrain1.jpg" muted loop playsinline preload="none" aria-label="In-the-wild ForceBand demo at a kitchen sink with a live per-finger force HUD"></video>
+            </figure>
+            <figure class="gallery-slide" data-label="Office desk">
+              <video data-src="static/videos/pretrain2.mp4" poster="static/images/posters/pretrain2.jpg" muted loop playsinline preload="none" aria-label="In-the-wild ForceBand demo at an office desk with a live per-finger force HUD"></video>
+            </figure>
+            <figure class="gallery-slide" data-label="Kitchen sink">
+              <video data-src="static/videos/pretrain3.mp4" poster="static/images/posters/pretrain3.jpg" muted loop playsinline preload="none" aria-label="In-the-wild ForceBand demo handling bottles at a sink with a live per-finger force HUD"></video>
+            </figure>
+            <figure class="gallery-slide" data-label="Workbench">
+              <video data-src="static/videos/pretrain4.mp4" poster="static/images/posters/pretrain4.jpg" muted loop playsinline preload="none" aria-label="In-the-wild ForceBand demo on a workbench with a live per-finger force HUD"></video>
+            </figure>
+            <button type="button" class="gallery-arrow prev" aria-label="Previous clip">
+              <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <button type="button" class="gallery-arrow next" aria-label="Next clip">
+              <svg viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+          </div>
+          <div class="gallery-thumbs" role="tablist" aria-label="Choose clip">
+            <button type="button" class="gallery-thumb is-active" aria-label="Show clip 1: Kitchen sink">
+              <img src="static/images/posters/pretrain1_thumb.jpg" alt="" loading="lazy">
+            </button>
+            <button type="button" class="gallery-thumb" aria-label="Show clip 2: Office desk">
+              <img src="static/images/posters/pretrain2_thumb.jpg" alt="" loading="lazy">
+            </button>
+            <button type="button" class="gallery-thumb" aria-label="Show clip 3: Kitchen sink">
+              <img src="static/images/posters/pretrain3_thumb.jpg" alt="" loading="lazy">
+            </button>
+            <button type="button" class="gallery-thumb" aria-label="Show clip 4: Workbench">
+              <img src="static/images/posters/pretrain4_thumb.jpg" alt="" loading="lazy">
+            </button>
+          </div>
+        </div>
+        <!-- <p class="caption reveal">
+          Live HUD per clip — raw sEMG, the ForceBand hand pose, and a force trace for every finger, Thumb to Pinky.
+        </p> -->
+
+        <!-- Dataset: the montage video dominates the split (.media-lg). The clip already animates the
+             action/gesture pie charts, so the side text stays high-level and avoids repeating numbers.
+             Source static/images/pretrain_dataset.m4v (1080p, ~12 MB) → static/videos/pretrain_dataset.mp4 (720p). -->
+        <div class="split media-lg flip">
+          <div class="split-text reveal">
+            <h3>10 hours, paired and diverse</h3>
+            <p>Synchronized video + sEMG + IMU + fingertip force.</p>
+            <ul class="checklist">
+              <li><strong>Actions</strong> — pinch/grasp, pick&amp;place, open/close, pour.</li>
+              <li><strong>Gestures</strong> — 2-, 3-, 5-finger, and in-the-wild.</li>
+              <li><strong>Objects</strong> — diverse shapes, sizes, weights. Public release planned.</li>
+            </ul>
+          </div>
+          <figure class="figure reveal">
+            <div class="video-frame">
+              <video class="scroll-play" data-src="static/videos/pretrain_dataset.mp4" poster="static/images/posters/pretrain_dataset.jpg" muted loop playsinline preload="none" aria-label="10-hour dataset montage: action and gesture distribution pie charts beside a grid of labeled demonstration clips"></video>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ POLICY ============================ -->
+    <section id="policy" class="section alt">
+      <div class="container">
+        <p class="eyebrow reveal">Policy Learning</p>
+        <h2 class="reveal">Three steps to a force-aware robot policy</h2>
+
+        <div class="steps">
+          <div class="step reveal">
+            <span class="step-num">01</span>
+            <h3>Calibrate</h3>
+            <p>~15 minutes of random play over varied objects, fingertip sensors on — adapts EMG2Force to your muscles.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-num">02</span>
+            <h3>Collect</h3>
+            <p>Sensors off. Demonstrate with just ForceBand and video; EMG2Force labels per-finger forces.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step-num">03</span>
+            <h3>Learn &amp; deploy</h3>
+            <p>Retarget to a parallel-jaw gripper and train a flow matching policy that predicts motion <em>and</em> force — zero-shot from human data.</p>
+          </div>
+        </div>
+
+        <figure class="figure reveal">
+          <!-- 3-step deployment clip (real footage): title card → Step 1 Calibration → Step 2 Data
+               Collection (sensor-free, EMG/fingertip-force + hand-pose HUDs) → Step 3 Deployment on the
+               UR-5. ~28 s, 16:9, no audio.
+               Source static/images/deploy.m4v (1080p, 45 MB) → static/videos/deploy.mp4 (720p, 6.4 MB). -->
+          <div class="video-frame">
+            <video class="scroll-play" data-src="static/videos/deploy.mp4" data-rest="16" poster="static/images/posters/deploy.jpg" muted playsinline preload="none" controls aria-label="Robot deployment in three steps: calibration play, sensor-free data collection with EMG2Force and hand-pose overlays, and flow-matching policy execution on the UR-5"></video>
+          </div>
+          <!-- <figcaption>Action chunks <code>a = [p; r<sub>6D</sub>; g; f]</code> — force sits on both sides of the policy: what is the hand feeling now, and what force comes next?</figcaption> -->
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================ RESULTS ============================ -->
+    <section id="results" class="section">
+      <div class="container">
+        <p class="eyebrow reveal">Results</p>
+        <h2 class="reveal">sEMG sees forces that vision cannot</h2>
+        <p class="lead reveal">
+          ForceBand halves hand-level force error vs vision baselines (VISOR-HOS, FEEL) — and the gap widens
+          on fingers vision can't read: ring PR AUC <strong>0.763 vs 0.398</strong>, pinky
+          <strong>0.590 vs 0.314</strong>.
+        </p>
+
+        <div class="split media-xl">
+          <figure class="figure reveal">
+            <!-- Force-estimation results (generated): paper Fig. 5 recreated as an animated 2x2 grouped-bar
+                 chart whose bars grow in (style of static/images/baselines.mp4). 4 s, 1920×1080 (16:9), no audio.
+                 Panels: (A) hand-level BCD ↑, (B) hand-level force est. ↓, (C) per-finger PR AUC ↑ with the
+                 random baseline, (D) per-finger force est. ↓. Regenerate via scripts/results_force_video.py. -->
+            <div class="video-frame">
+              <video class="scroll-play" data-src="static/videos/results_force.mp4" data-rest="end" poster="static/images/posters/results_force.jpg" muted playsinline preload="none" aria-label="Animated Figure 5: ForceBand vs vision baselines across hand-level and per-finger force-estimation metrics, with bars growing in"></video>
+            </div>
+          </figure>
+          <div class="split-text reveal">
+            <h3>Why muscles beat pixels</h3>
+            <ul class="checklist">
+              <li><strong>Occlusion-proof</strong> — hidden fingers still load their forearm muscles.</li>
+              <li><strong>Honest at the tail</strong> — vision collapses where contact is rare (prevalence 45% → 7%).</li>
+              <li><strong>Complementary</strong> — vision gives contact cues; muscles give magnitude.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Electrode ablation -->
+        <div class="subsection">
+          <h2 class="reveal">Anatomy beats symmetry</h2>
+          <div class="split media-xl">
+            <figure class="figure reveal">
+              <!-- Electrode-placement ablation (generated): paper Table 1 turned into an animated 2-panel
+                   line/curve plot whose curves draw in left-to-right. 4 s, 1920×1080 (16:9), no audio, holds the final
+                   frame. (A) MAE/RMSE vs channel count 1→8; (B) 8-ch even vs anatomical with a −18% MAE
+                   callout. Regenerate via scripts/placement_ablation_video.py. -->
+              <div class="video-frame">
+                <video class="scroll-play" data-src="static/videos/placement_ablation.mp4" data-rest="end" poster="static/images/posters/placement_ablation.jpg" muted playsinline preload="none" aria-label="Animated Table 1: force-prediction error falling as electrode channels go 1 to 8, and the anatomically-guided 8-channel layout beating an even ring by 18% on MAE"></video>
+              </div>
+            </figure>
+            <div class="split-text reveal">
+              <h3>Where you listen matters</h3>
+              <p>
+                More channels help (1.89 → 0.85 N MAE from 1 → 8) — and the anatomically guided layout beats
+                an evenly spaced ring by a further <strong>18%</strong> (0.77 vs 0.94 N).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Policy results -->
+        <div class="subsection">
+          <h2 class="reveal">Object-specific force, no force sensors at deployment</h2>
+          <p class="lead reveal">
+            Pick–squeeze–place on a UR-5: nine objects, <strong>43–650 g</strong>, grasp widths
+            <strong>1–72 mm</strong>, 15 demos each. ForceBand: <strong>87%</strong>. Gripper-only baselines
+            never produce the squeeze — the binary gripper scores zero on it.
+          </p>
+
+          <figure class="figure reveal">
+            <!-- Policy-success chart (generated): paper Table 2 recreated as an animated 2-row grouped-bar
+                 chart (bars grow in, style of static/images/baselines.mp4). (A) pick&place and (B) squeeze
+                 success out of 10 across the nine objects (with object weight), for Continuous-gripper /
+                 Binary-gripper / ForceBand. Only ForceBand produces the squeeze; gripper baselines score ~0
+                 (Chips needs no squeeze → N/A). Behaviour callouts bracket the x-ticks: Firm squeeze (Mustard–BBQ),
+                 Gentle contact (Chips), OOD sequence (Mustard S./Chocolate/Ketchup) — these replaced the old
+                 rollout placeholders. 4 s, 1920×1080 (16:9), no audio, holds the final frame.
+                 Regenerate via scripts/policy_success_video.py. -->
+            <div class="video-frame">
+              <video class="scroll-play" data-src="static/videos/policy_success.mp4" data-rest="end" poster="static/images/posters/policy_success.jpg" muted playsinline preload="none" aria-label="Animated Table 2: pick-and-place and squeeze success out of 10 across nine objects (43–650 g) for continuous-gripper, binary-gripper, and ForceBand — only ForceBand achieves the squeeze while the gripper baselines score near zero"></video>
+            </div>
+          </figure>
+          <!-- <p class="caption reveal">Distinct peak forces from 3.2 to 19.3 N across objects — behaviors gripper-only baselines cannot reproduce.</p> -->
+        </div>
+
+        <!-- Robustness -->
+        <div class="subsection">
+          <h2 class="reveal">Generalization Test</h2>
+          <!-- <p class="lead reveal">
+            Force comes from muscles, not pixels — the policy holds up under novel objects, extreme lighting,
+            novel backgrounds, and distractors.
+          </p> -->
+          <figure class="figure reveal">
+            <!-- Robustness quad (real footage): 2×2 grid playing simultaneously, each tile with a PRED FORCE
+                 HUD + force trace: Novel Objects (train 650 g / 49 mm → test 210 g / 19 mm, with the train/test
+                 inset card), Extreme Lighting (near-dark), Novel Background (draped cloth), Distractors
+                 (cluttered table). ~7 s, 1920×1080 (16:9), no audio, loops.
+                 Source static/images/generalization_test.m4v (1080p, 9.4 MB) →
+                 static/videos/generalization_test.mp4 (1080p, 2.6 MB). -->
+            <div class="video-frame">
+              <video class="scroll-play" data-src="static/videos/generalization_test.mp4" poster="static/images/posters/generalization_test.jpg" muted loop playsinline preload="none" aria-label="Robustness quad: four policy rollouts playing at once with live predicted-force HUDs — novel objects (650 g/49 mm to 210 g/19 mm), extreme lighting, novel background, and distractors"></video>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ BIBTEX ============================ -->
+    <section id="bibtex" class="section">
+      <div class="container">
+        <p class="eyebrow reveal">Citation</p>
+        <h2 class="reveal">BibTeX</h2>
+        <div class="bibtex-box reveal">
+          <button class="copy-btn" id="copyBib" aria-label="Copy BibTeX">
+            <svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>
+            <span>Copy</span>
+          </button>
+<!-- TODO: replace with the final citation once the paper is public -->
+<pre id="bibText">@article{he2026forceband,
+  title  = {ForceBand: Learning Forceful Manipulation with sEMG},
+  author = {He, Botao and Wang, Zhi and Kuang, Linna and Ghosh, Ishaan and Malik, Jitendra and Fermuller, Cornelia and Wu, Tingfan and Mao, Jiayuan and Liu, Ruoshi and Qi, Haozhi and Aloimonos, Yiannis},
+  note   = {Under review},
+  year   = {2026}
+}</pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="static/images/forceband_band.png" alt="ForceBand logo">
+        <span><em>Force</em>Band</span>
+      </div>
+      <p>© 2026 The ForceBand Team · Amazon FAR · University of Maryland<br>
+      Website licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" aria-label="Close">&times;</button>
+    <img src="" alt="">
+  </div>
+
+  <button class="to-top" id="toTop" aria-label="Back to top">
+    <svg viewBox="0 0 24 24"><path d="M12 7.5 19.5 15l-1.4 1.4L12 10.3l-6.1 6.1L4.5 15 12 7.5z"/></svg>
+  </button>
+
+  <script src="static/js/main.js?v=7"></script>
+</body>
+</html>
