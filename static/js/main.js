@@ -325,6 +325,25 @@
     });
   }
 
+  /* ---------- page-view counter (counterapi.dev v1, keyless drop-in) ---------- */
+  // Increments + reads a total hit count on each load. The element stays hidden
+  // on any failure, so a blocked/dead service never leaves a broken placeholder.
+  // Namespace "forceband-emg" is unique to this site — change it if you fork.
+
+  const viewWrap = document.getElementById('view-counter');
+  const viewOut = document.getElementById('view-count');
+  if (viewWrap && viewOut) {
+    fetch('https://api.counterapi.dev/v1/forceband-emg/site/up', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d) => {
+        const n = d && (d.count ?? d.value);
+        if (typeof n !== 'number') throw new Error('bad payload');
+        viewOut.textContent = n.toLocaleString();
+        viewWrap.classList.add('is-visible');
+      })
+      .catch(() => {}); // stay hidden if the service is down
+  }
+
   /* ---------- one-at-a-time gallery carousel ---------- */
   // Side arrows + bottom segment bar switch between clips. Only the active video
   // plays; this owns lazy-loading and playback (its videos skip the .scroll-play
